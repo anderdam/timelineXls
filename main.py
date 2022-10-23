@@ -1,36 +1,40 @@
-# Imports
+"""Criação, formatação e gráfico de Gantt para gerar uma timeline de processos"""
+
 import pandas as pd
-from openpyxl.utils.dataframe import dataframe_to_rows
-from openpyxl import Workbook
+import matplotlib.pyplot as plt
 
 # Início da conversão de csv para xls.
-# Foi utilizado openpyxl ao invés de pandas.to_excel() devido a mensagem de erro indicando que a função
-# será depreciada.
 
 # Caminho e arquivo de entrada e saída
-input_path = 'C:\\Users\\adapp\\Desktop\\'
-input_file = 'agend.csv'
-out_path = 'C:\\Users\\adapp\\Desktop\\'
-out_file = 'agendXls.xls'
+INPUT_FILE = 'C:\\Users\\adapp\\Desktop\\agend.csv'
+OUT_FILE = 'C:\\Users\\adapp\\Desktop\\agendXls.xls'
 
-# Cria a planilha (Workbook) e a deixa ativa para alterações
-wb = Workbook()
-ws = wb.active
-
-# Utilizando pandas é realizada a leitura do arquivo em csv
-df = pd.read_csv(input_path + input_file)
-
-# Loop para adicionar cada linha do csv na planilha criada
-for r in dataframe_to_rows(df, index=True, header=True):
-    ws.append(r)
+# Utilizando pandas é realizada a leitura do arquivo em csv e com
+df = pd.read_csv(INPUT_FILE)
+writer = pd.ExcelWriter(OUT_FILE, engine='xlsxwriter')  # pylint: disable=abstract-class-instantiated
+df.to_excel(writer, sheet_name='Timeline')
 
 # Salvar a nova planilha, sendo que caso já exista a planilha, a nova sobrescreve a anterior
-wb.save(out_path + out_file)
+# Exibição de mensagem e amostra confirmando a criação da planilha.
 
-print(f'O arquivo {out_file} foi gerado com sucesso em {out_path}')
+writer.save()
+
+print(f'O arquivo {OUT_FILE} foi gerado com sucesso.')
+print()
+print('Amostra:')
+print(df.head())
 
 # Fim da conversão de csv para xls e início da formatação dos dados
 
-df = pd.read_excel(out_path + out_file)
-df.dropna()
-print(df.head())
+df = pd.read_excel(OUT_FILE)
+
+# Gantt Chart
+
+# Project start date
+
+df['end_time'] = df.Horas + 1
+print(df)
+
+fig, ax = plt.subplots(1, figsize=(16, 6))
+ax.barh(df.mensagem, df.end_time, left=df.Horas)
+plt.show()
